@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moss and the Lantern Valley</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#141a38;--card:#1f2850;--ink:#f5f1e6;--mut:#aab3d6;--gold:#ffc94d;--ok:#6fe3a0;--bad:#ff8a8a;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:26px;margin:8px 0}h2{font-size:20px;margin:0 0 8px;color:var(--gold)}
+.card{background:var(--card);border-radius:16px;padding:16px;margin:12px 0}
+.story{font-size:17px}
+.dots{display:flex;gap:6px;margin:6px 0}.dots i{flex:1;height:8px;border-radius:4px;background:#333c6b}.dots i.d{background:var(--gold)}
+button,select{font:inherit;border-radius:12px;border:2px solid #3a4580;background:#28336a;color:var(--ink);padding:10px 14px;cursor:pointer}
+button:hover{border-color:var(--gold)}
+button.go{background:var(--gold);color:#2a2000;border-color:var(--gold);font-weight:700}
+.opts{display:grid;gap:8px;margin-top:10px}
+pre,.code{background:#0d1230;border-radius:12px;padding:12px;font-family:Consolas,monospace;font-size:16px;margin:10px 0;overflow-x:auto;white-space:pre-wrap}
+.k{color:#ff9ed8}.n{color:#7fe3ff}
+.track{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;font-size:30px;margin:12px 0;min-height:70px;align-items:flex-end}
+.cell{width:44px;text-align:center;position:relative}
+.cell .m{position:absolute;top:-30px;left:0;right:0;font-size:26px}
+.dark{filter:grayscale(1) brightness(.5)}.lit{filter:drop-shadow(0 0 8px #ffc94d)}
+.msg{min-height:26px;font-weight:700;margin-top:8px}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.step button{width:40px;padding:6px}
+.big{font-size:20px;font-weight:700;min-width:30px;text-align:center}
+.tip{color:var(--mut);font-size:15px}
+</style></head><body><main>
+<h1>🏮 Moss and the Lantern Valley</h1>
+<div class="dots" id="dots"></div>
+<div id="app"></div>
+</main>
+<script>
+const L=[
+{c:"Chapter 1: Variables",story:"Night is coming to Lantern Valley! You are Moss, a tiny robot with a big backpack. Old Keeper Pim gives you oil jars. A <b>variable</b> is a labeled box that remembers something. Your backpack label is <span class='n'>jars</span>.",
+ t:"choice",code:"<span class='n'>jars</span> = 4",q:"Pim just gave you the line above. How many jars are in your backpack?",o:["4","jars","0"],a:0,ex:"Right! The = sign means 'put this in the box'. So jars now holds 4."},
+{c:"Chapter 1: Variables",story:"You walk on and find 2 more jars by the road. Variables can <b>change</b>!",
+ t:"choice",code:"<span class='n'>jars</span> = 4\n<span class='n'>jars</span> = <span class='n'>jars</span> + 2",q:"After both lines run, how many jars do you have?",o:["2","6","42"],a:1,ex:"Yes! The computer reads jars (4), adds 2, and stores 6 back in the box."},
+{c:"Chapter 2: Loops",story:"Now the valley path! Lighting each lantern by hand is slow. A <b>loop</b> repeats a job for you. Tell Moss how many times to repeat so every lantern glows.",
+ t:"loop",n:5},
+{c:"Chapter 2: Loops",story:"The path is longer on the hills. Same loop, bigger number. Count the lanterns first!",t:"loop",n:8},
+{c:"Chapter 3: Conditionals",story:"Some lanterns are already lit by the fireflies. Oil is precious, so Moss must <b>decide</b>. A <b>conditional</b> says: <i>if</i> something is true, do this, <i>else</i> do that. Fill in the blanks so Moss lights only dark lanterns and wastes no oil.",
+ t:"cond",p:[1,0,1,0,0,1,0]},
+{c:"Finale",story:"The whole valley glows! 🌟 You used <b>variables</b> to remember, <b>loops</b> to repeat, and <b>conditionals</b> to decide. Real programmers use these every day. Moss thanks you, Keeper Pim cheers, and the stars come out.",t:"end"}
+];
+let i=0,busy=false;const $=s=>document.querySelector(s),app=$("#app");
+function dots(){$("#dots").innerHTML=L.map((_,k)=>`<i class="${k<i?'d':''}"></i>`).join("")}
+function next(){i++;render()}
+function head(l){return `<div class="card story"><h2>${l.c}</h2>${l.story}</div>`}
+function render(){const l=L[i];dots();busy=false;
+ if(l.t=="choice"){app.innerHTML=head(l)+`<div class="card"><div class="code">${l.code}</div><b>${l.q}</b><div class="opts">${l.o.map((o,k)=>`<button onclick="pick(${k})">${o}</button>`).join("")}</div><div class="msg" id="m"></div></div>`}
+ if(l.t=="loop"){app.innerHTML=head(l)+`<div class="card"><div class="code"><span class="k">repeat</span> <span id="cnt" class="n">1</span> <span class="k">times:</span>\n   walk forward\n   light the lantern</div>
+ <div class="row step">Repeat: <button onclick="ch(-1)">−</button><span class="big" id="cv">1</span><button onclick="ch(1)">+</button><button class="go" onclick="runLoop()">▶ Run</button></div>
+ <div class="track" id="tr"></div><div class="msg" id="m"></div></div>`;l.v=1;drawLoop(-1,0)}
+ if(l.t=="cond"){l.cd="dark";l.th="light";l.el="light";
+ app.innerHTML=head(l)+`<div class="card"><div class="code"><span class="k">repeat</span> for each lantern:\n   <span class="k">if</span> lantern is <select id="cd"><option value="dark">dark</option><option value="lit">lit</option></select>\n      <select id="th">${ac()}</select>\n   <span class="k">else</span>\n      <select id="el">${ac(1)}</select></div>
+ <div class="row"><button class="go" onclick="runCond()">▶ Run</button></div><div class="track" id="tr"></div><div class="msg" id="m"></div></div>`;drawC(l.p.map(x=>x),-1)}
+ if(l.t=="end"){app.innerHTML=head(l)+`<div class="card"><div class="track">🏮🏮🏮🏮🏮🏮🏮</div><button class="go" onclick="i=0;render()">↺ Play again</button><p class="tip">Next ideas: a Chapter 4 about functions, or a mode where kids type real code.</p></div>`}
+}
+function ac(e){return e?`<option value="skip">walk on</option><option value="light">light it</option>`:`<option value="light">light it</option><option value="skip">walk on</option>`}
+function pick(k){const l=L[i],m=$("#m");if(k==l.a){m.className="msg ok";m.innerHTML="✅ "+l.ex+" <br><button class='go' onclick='next()'>Continue →</button>"}else{m.className="msg bad";m.textContent="Not quite. Read the code line by line and try again!"}}
+function ch(d){const l=L[i];l.v=Math.max(1,Math.min(12,l.v+d));$("#cv").textContent=l.v;$("#cnt").textContent=l.v}
+function drawLoop(pos,lit){const n=L[i].n;$("#tr").innerHTML=Array.from({length:n},(_,k)=>`<div class="cell"><div class="m">${k==pos?"🤖":""}</div><span class="${k<lit?'lit':'dark'}">🏮</span></div>`).join("")}
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+async function runLoop(){if(busy)return;busy=true;const l=L[i],m=$("#m");m.textContent="";let lit=0;
+ for(let k=0;k<l.v;k++){if(k>=l.n){m.className="msg bad";m.textContent="Oops! Moss walked off the end of the path. Too many repeats!";busy=false;return}drawLoop(k,lit);await sl(350);lit++;drawLoop(k,lit);await sl(350)}
+ if(lit==l.n){m.className="msg ok";m.innerHTML="✅ Every lantern glows! One loop did all that work. <br><button class='go' onclick='next()'>Continue →</button>"}
+ else{m.className="msg bad";m.textContent=`Only ${lit} of ${l.n} lanterns are lit. Try a bigger number!`;busy=false}}
+function drawC(s,pos,w){$("#tr").innerHTML=s.map((x,k)=>`<div class="cell"><div class="m">${k==pos?"🤖":""}</div><span class="${x?'lit':'dark'}">🏮</span></div>`).join("")}
+async function runCond(){if(busy)return;busy=true;const l=L[i],m=$("#m"),s=l.p.slice();const cd=$("#cd").value,th=$("#th").value,el=$("#el").value;let waste=0;m.textContent="";
+ for(let k=0;k<s.length;k++){drawC(s,k);await sl(450);const t=cd=="dark"?!s[k]:!!s[k];const a=t?th:el;if(a=="light"){if(s[k])waste++;s[k]=1}drawC(s,k);await sl(250)}
+ const dark=s.filter(x=>!x).length;
+ if(!dark&&!waste){m.className="msg ok";m.innerHTML="✅ Perfect! Moss lit only the dark ones and saved oil. <br><button class='go' onclick='next()'>Continue →</button>"}
+ else{m.className="msg bad";m.textContent=(dark?`${dark} lantern(s) stayed dark. `:"")+(waste?`Moss wasted oil on ${waste} lantern(s) that were already lit. `:"")+"Check your if and else choices!";busy=false;drawC(l.p,-1)}}
+render();
+</script></body></html>
